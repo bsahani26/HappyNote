@@ -25,7 +25,7 @@ import com.bikash.happynote.feature_note.domain.model.Note
 import com.bikash.happynote.feature_note.presentation.add_edit_notes.AddEditNoteEvent
 import com.bikash.happynote.feature_note.presentation.add_edit_notes.AddEditNoteViewModel
 import com.bikash.happynote.feature_note.presentation.add_edit_notes.components.TransparentHintTextField
-import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
 /**
@@ -49,13 +49,15 @@ fun AddEditNoteScreen(
     val scope = rememberCoroutineScope()
 
     LaunchedEffect(key1 = true) {
-        viewModel.eventFlow.collectLatest { event ->
+        viewModel.eventFlow.collect { event ->
             when (event) {
                 is AddEditNoteViewModel.UiEvent.ShowSnackbar -> {
-                    scaffoldState
-                        .snackbarHostState.showSnackbar(
-                            message = event.message
-                        )
+                    if (event.message.isNotBlank()) {
+                        scaffoldState
+                            .snackbarHostState.showSnackbar(
+                                message = event.message
+                            )
+                    }
                 }
                 is AddEditNoteViewModel.UiEvent.SaveNote -> {
                     navController.navigateUp()
@@ -64,14 +66,17 @@ fun AddEditNoteScreen(
         }
     }
 
-    Scaffold(floatingActionButton = {
-        FloatingActionButton(
-            onClick = { viewModel.onEvent(AddEditNoteEvent.SaveNote) },
-            backgroundColor = MaterialTheme.colors.primary
-        ) {
-            Icon(imageVector = Icons.Default.Save, contentDescription = "Save note")
-        }
-    }) {
+    Scaffold(
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = { viewModel.onEvent(AddEditNoteEvent.SaveNote) },
+                backgroundColor = MaterialTheme.colors.primary
+            ) {
+                Icon(imageVector = Icons.Default.Save, contentDescription = "Save note")
+            }
+        },
+        scaffoldState = scaffoldState
+    ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
